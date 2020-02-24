@@ -7,19 +7,11 @@ require "./lib/stat_tracker"
 class StatTrackerTest < Minitest::Test
   def setup
     @info = {
-            games: "./test/fixtures/games_truncated.csv",
-            teams: "./test/fixtures/teams_truncated.csv",
-            game_teams: "./test/fixtures/game_teams_truncated.csv"
+            game: "./test/fixtures/games_truncated.csv",
+            team: "./test/fixtures/teams_truncated.csv",
+            game_team: "./test/fixtures/game_teams_truncated.csv"
             }
-
-    @info_for_averages = {
-                          games: "./test/fixtures/games_average_truncated.csv",
-                          teams: "./test/fixtures/teams_truncated.csv",
-                          game_teams: "./test/fixtures/game_teams_average_truncated.csv"
-                          }
-
     @stat_tracker = StatTracker.from_csv(@info)
-    @stat_tracker_average = StatTracker.from_csv(@info_for_averages)
   end
 
   def test_it_exists
@@ -33,63 +25,104 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_calculate_highest_total_score
+    skip
     assert_equal 6, @stat_tracker.highest_total_score
   end
 
   def test_it_can_calculate_lowest_total_score
+    skip
     assert_equal 3, @stat_tracker.lowest_total_score
   end
 
   def test_it_can_return_biggest_blowout
+    skip
     assert_equal 2, @stat_tracker.biggest_blowout
   end
 
   def test_it_can_count_the_games_by_season
-    expected = {"20122013"=>7, "20132014"=>3}
+    skip
+    expected = {20122013=>7, 20132014=>3}
 
     assert_equal expected, @stat_tracker.count_of_games_by_season
   end
 
   def test_it_can_calculate_average_goals_per_game
+    skip
     assert_equal (4.50), @stat_tracker.average_goals_per_game
   end
 
   def test_it_can_show_average_goals_by_season
-    expected = {"20122013"=>4.71, "20132014"=>4.00}
+    skip
+    expected = {20122013=>4.71, 20132014=>4.00}
     assert_equal expected, @stat_tracker.average_goals_by_season
   end
 
   def test_it_can_get_home_wins_percentage
+    skip
     assert_equal 0.6, @stat_tracker.percentage_home_wins
   end
 
   def test_it_can_get_away_win_percentages
+    skip
     assert_equal 0.3, @stat_tracker.percentage_visitor_wins
   end
 
-  def test_it_can_get_tied_percentage ## refactor with new data pool to grab real percentage instead of stub
+  def test_it_can_get_tied_percentage
+    skip
     @stat_tracker.stubs(:percentage_ties).returns(0.10)
 
-    assert 0.10, @stat_tracker.percentage_ties
-  end
-  
-  def test_it_can_count_number_of_teams
-    assert_equal 9, @stat_tracker.count_of_teams
+    assert_equal 0.10, @stat_tracker.percentage_ties
   end
 
-  def test_it_can_find_the_best_offense
-    assert_equal "Real Salt Lake", @stat_tracker_average.best_offense
+  def test_it_can_lowest_scoring_home_team_hash
+    skip
+    expected = {
+      "FC Dallas" => 4,
+      "Houston Dynamo" => 2,
+      "Montreal Impact" => 2,
+      "Chicago Fire" => 2,
+      "Real Salt Lake" => 3,
+      "Orlando Pride" => 2
+    }
+    assert_equal expected, @stat_tracker.lowest_scoring_home_team_hash
   end
 
-  def test_it_can_find_the_worst_offense
-    assert_equal "Orlando Pride", @stat_tracker_average.worst_offense
+  def test_it_can_lowest_scoring_home_team
+    skip
+    assert_equal "Houston Dynamo", @stat_tracker.lowest_scoring_home_team
   end
 
-  def test_it_can_find_the_worst_defence
-    assert_equal "Chicago Fire", @stat_tracker_average.worst_defense
+  def test_winningest_team_hash
+    expected = {
+      "Houston Dynamo"=>50.9,
+      "FC Dallas"=>47.3,
+      "Philadelphia Union"=>40.3,
+      "Montreal Impact"=>59.7,
+      "Real Salt Lake"=>52.4,
+      "Chicago Fire"=>47.1,
+      "Orlando Pride"=>58.3,
+      "Sky Blue FC"=>52.7,
+      "LA Galaxy"=>41.7
+    }
+    assert_equal expected, @stat_tracker.winningest_team_hash
   end
-  
-  def test_it_can_find_the_best_defence
-    assert_equal "Real Salt Lake", @stat_tracker_average.best_defense
+
+  def test_winningest_team
+    assert_equal "Montreal Impact", @stat_tracker.winningest_team
+  end
+
+  def test_best_fans
+    expected = {
+      3=>"away",
+      6=>"home",
+      19=>"away",
+      23=>"home",
+      24=>"home",
+      4=>"home",
+      29=>"home",
+      12=>"away",
+      17=>"away"
+    }
+    assert_equal expected, @stat_tracker.best_fans
   end
 end
