@@ -40,7 +40,9 @@ class StatTracker
       end.length
     games_by_season[season] = games_per_season
     games_by_season
-    end
+    games_by_season = @game_collection.all.group_by{|game| game.season}         #games_by_season 1st occurance
+    games_by_season.transform_values!{|games| games.length}
+
   end
 
   # Can and should implement daniels helper method for total_goals_per_game
@@ -80,11 +82,14 @@ class StatTracker
     home_wins = @game_collection.games.find_all {|game| game.home_goals < game.away_goals}
     home_wins.count.to_f / (@game_collection.games.count.to_f).round(2)
   end
-
   def percentage_ties
     tied_games = @game_collection.games.find_all {|game| game.home_goals == game.away_goals}
     tied_games.count.to_f / (@game_collection.games.count.to_f).round(3)
   end
+  # uses both team and game_team collections
+  def worst_offense
+    games_by_team = @game_team_collection.all.group_by{|game| game.team_id}
+    team_ids = @team_collection.all.map{|team| team.team_id}  # This could be shifted to use the game_team_collection data, just use a #uniq at the end
 
   def lowest_scoring_home_team_hash
     home_team = {}
@@ -112,6 +117,45 @@ class StatTracker
       end
     end
     winpercent
+  end  #uses both team and game collections.
+  def best_defense
+    goals_against_by_team = {}
+    @team_collection.array_by_key(:team_id).each do |team_id|
+      goals_against_by_team[team_id] = []
+    end
+    @game_collection.all.each do |game|
+      goals_against_by_team[game.home_team_id] << game.away_goals
+      goals_against_by_team[game.away_team_id] << game.home_goals
+    end
+    goals_against_by_team.transform_values! do |goals|
+      goals.sum/goals.length.to_f                                                 # average calcultion
+    end
+    best_defense = goals_against_by_team.key(goals_against_by_team.values.min)
+    @team_collection.where_id(best_defense)
+  end
+
+  # uses both team and game collections.
+  # needs refactoring
+  def worst_defense
+    goals_against_team = @team_collection.all.reduce({}) do |hash, team|
+      hash[team.team_id] = []
+      hash
+    end
+
+    @game_collection.all.each do |game|
+      goals_against_team[game.home_team_id] << game.away_goals
+      goals_against_team[game.away_team_id] << game.home_goals
+    end
+
+    average_goals_against_team = goals_against_team.transform_values do |goals|
+      (goals.sum/goals.length.to_f)                                               # average calculation
+    end
+
+    worst_average = average_goals_against_team.values.max
+
+    worst_team = average_goals_against_team.key(worst_average)
+
+    @team_collection.where_id(worst_team)
   end
 
   def winningest_team
@@ -128,6 +172,44 @@ class StatTracker
     end
     away_teams
     hometeams
+    require "pry"; binding.pry
+  end
+
+  #uses game and game_team collections.
+  def winningest_coach(for_season) # the game_ids can tell you what season there from. first 4 numbers of id will match the first 4 from season.
+    games_by_season = @game_collection.all.group_by{|game| game.season}           # games_by_season 3rd occurance
+    games_for_season = games_by_season.fetch_values(for_season).flatten
+
+    game_teams = games_for_season.map do |game|
+      @game_team_collection.where(:game_id, game.game_id)
+    end.flatten
+
+    game_team_by_coach = game_teams.group_by { |game| game.head_coach }
+
+    game_team_by_coach.each do |key, value|
+       percent = value.count{|game| game.result == "WIN"}/value.length.to_f
+       game_team_by_coach[key] = percent
+    end
+
+    game_team_by_coach.key(game_team_by_coach.values.max)
+  end
+
+  def worst_coach(for_season)
+    games_by_season = @game_collection.all.group_by{|game| game.season}           # games_by_season 3rd occurance
+    games_for_season = games_by_season.fetch_values(for_season).flatten
+
+    game_teams = games_for_season.map do |game|
+      @game_team_collection.where(:game_id, game.game_id)
+    end.flatten
+
+    game_team_by_coach = game_teams.group_by { |game| game.head_coach }
+
+    game_team_by_coach.each do |key, value|
+       percent = value.count{|game| game.result == "WIN"}/value.length.to_f
+       game_team_by_coach[key] = percent
+     end
+
+    game_team_by_coach.key(game_team_by_coach.values.min)
     require "pry"; binding.pry
   end
 end

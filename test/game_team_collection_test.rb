@@ -82,4 +82,13 @@ class GameTeamCollectionTest < Minitest::Test
     assert_equal expected_game_id, @game_team_collection.array_by_key(:game_id)
     assert_equal expected_team_id, @game_team_collection.array_by_key(:team_id).sort
   end
+
+  def test_it_can_find_game_team_objects_based_on_keys_and_values
+    @game_team_collection.create_game_team_collection
+    expected_first = @game_team_collection.all[0..1]
+    expected_second = @game_team_collection.all[-2..-1]
+
+    assert_equal expected_first, @game_team_collection.where(:game_id, 2012030221)
+    assert_equal expected_second, @game_team_collection.where(:game_id, 2013021085)
+  end
 end

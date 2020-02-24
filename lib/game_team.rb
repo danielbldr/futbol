@@ -4,12 +4,12 @@ class GameTeam
               :power_play_goals, :face_of_win_percentage, :giveaways, :takeaways
 
   def initialize(game_team_params)
-    @game_id = game_team_params[:game_id].to_i
+    @game_id = game_team_params[:game_id].to_i #used
     @team_id = game_team_params[:team_id].to_i
-    @home_or_away = game_team_params[:hoa]
-    @result = game_team_params[:result]
+    @home_or_away = game_team_params[:hoa] #used
+    @result = game_team_params[:result] #used
     @settled_in = game_team_params[:settled_in]
-    @head_coach = game_team_params[:head_coach]
+    @head_coach = game_team_params[:head_coach] #used
     @goals = game_team_params[:goals].to_i # used
     @shots = game_team_params[:shots].to_i
     @tackles = game_team_params[:tackles].to_i
