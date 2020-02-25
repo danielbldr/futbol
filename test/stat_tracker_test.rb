@@ -147,6 +147,7 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_find_the_winningest_coach_by_season #I need a better data pool for this
+    skip
     assert_equal "Bruce Boudreau", @stat_tracker_average.winningest_coach("20122013")
     game_1_info = {
                     game_id: "2012030221", season: "20122013", type: "Postseason",
@@ -194,6 +195,31 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_find_the_worst_coach_by_season
-    assert_equal "TBD", @stat_tracker_average.worst_coach("20122013")  #Ileft this a TBD for now. i need a new fixture file.
+    skip
+    assert_equal "TBD", @stat_tracker_average.worst_coach("20122013")  #Ileft this a TBD for now. i need a new fixture file.  def test_it_can_find_the_best_defence
+    assert_equal "Real Salt Lake", @stat_tracker_average.best_defense
+  end
+
+  def test_it_can_return_team_with_most_tackles
+    assert_equal "FC Dallas", @stat_tracker_average.most_tackles("20122013")
+    assert_equal "Chicago Fire", @stat_tracker_average.most_tackles("20132014")
+  end
+
+  def test_it_can_return_team_with_fewest_tackles
+    assert_equal "Sky Blue FC", @stat_tracker_average.fewest_tackles("20122013")
+    assert_equal "Montreal Impact", @stat_tracker_average.fewest_tackles("20132014")
+  end
+
+  def test_it_can_return_least_accurate_team
+    assert_equal "Real Salt Lake", @stat_tracker_average.least_accurate_team("20122013")
+    assert_equal "Real Salt Lake", @stat_tracker_average.least_accurate_team("20132014")
+  end
+
+  def test_it_can_return_best_fan
+    assert_equal "Philadelphia Union", @stat_tracker_average.best_fans
+  end
+
+  def test_it_can_return_worst_fan
+    assert_equal "FC Dallas", @stat_tracker_average.worst_fans
   end
 end
