@@ -93,6 +93,20 @@ class StatTrackerTest < Minitest::Test
     assert_equal "Chicago Fire", @stat_tracker_average.worst_defense
   end
 
+<<<<<<< HEAD
+  def test_it_can_return_highest_scoring_visitor
+    assert_equal "Real Salt Lake", @stat_tracker_average.highest_scoring_visitor
+  end
+
+  def test_it_can_return_highest_scoring_home_team
+    assert_equal "FC Dallas", @stat_tracker_average.highest_scoring_home_team
+  end
+
+  def test_it_can_return_lowest_scoring_visitor
+    assert_equal "Orlando Pride", @stat_tracker_average.lowest_scoring_visitor
+  end
+
+=======
   def test_it_can_find_the_winningest_coach_by_season #I need a better data pool for this
     assert_equal "Bruce Boudreau", @stat_tracker_average.winningest_coach("20122013")
   end
@@ -287,4 +301,5 @@ class StatTrackerTest < Minitest::Test
                                                             ])
     assert_equal "FC Dallas", @stat_tracker.biggest_surprise("20122013")
   end
+>>>>>>> 43852ff13d113e88d545375e29a8d557dba1d9e3
 end

@@ -9,3 +9,8 @@ game_id,season,type,date_time,away_team_id,home_team_id,away_goals,home_goals,ve
 2012020225,20122013,Regular Season,2/19/13,29,24,1,3,Rio Tinto Stadium,/api/v1/venues/null
 2012020577,20122013,Regular Season,4/8/13,12,6,2,4,Toyota Stadium,/api/v1/venues/null
 2013021085,20132014,Regular Season,3/25/14,17,29,2,2,Exploria Stadium,/api/v1/venues/null
+2013020875,20132014,Regular Season,2/8/14,23,4,1,3,WakeMed Soccer Park,/api/v1/venues/null
+2013021213,20132014,Regular Season,4/12/14,4,23,2,3,Children's Mercy Park,/api/v1/venues/null
+2013020153,20132014,Regular Season,10/26/13,23,19,3,2,Talen Energy Stadium,/api/v1/venues/null
+2012020073,20122013,Regular Season,1/29/13,6,12,3,3,Yurcak Field,/api/v1/venues/null
+2014020456,20142015,Regular Season,12/17/14,29,17,0,0,Dignity Health Sports Park,/api/v1/venues/null
