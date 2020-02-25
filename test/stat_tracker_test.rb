@@ -147,18 +147,11 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_find_the_winningest_coach_by_season #I need a better data pool for this
-    skip
     assert_equal "Bruce Boudreau", @stat_tracker_average.winningest_coach("20122013")
-    game_1_info = {
-                    game_id: "2012030221", season: "20122013", type: "Postseason",
-                    date_time: "5/16/13", away_team_id: "3", home_team_id: "6", away_goals: "2",
-                    home_goals: "3", venue: "Toyota Stadium", venue_link: "/api/v1/venues/null"
-                  }
-    game_2_info = {
-                    game_id: "2012030222", season: "20122013", type: "Postseason",
-                    date_time: "5/16/13", away_team_id: "6", home_team_id: "3", away_goals: "2",
-                    home_goals: "3", venue: "Toyota Stadium", venue_link: "/api/v1/venues/null"
-                  }
+  end
+
+  def test_it_can_find_the_worst_coach_by_season
+
     game_team_1_info =  {
                         game_id: "2012030221",team_id: "3",
                         hoa: "away",result: "LOSS",settled_in: "OT",
@@ -191,13 +184,16 @@ class StatTrackerTest < Minitest::Test
                         powerplaygoals: "0",faceoffwinpercentage: "44.8",
                         giveaways: "17",takeaways: "7"
                         }
-    @game_collection.stubs(:all).returns([])
-  end
 
-  def test_it_can_find_the_worst_coach_by_season
-    skip
-    assert_equal "TBD", @stat_tracker_average.worst_coach("20122013")  #Ileft this a TBD for now. i need a new fixture file.  def test_it_can_find_the_best_defence
-    assert_equal "Real Salt Lake", @stat_tracker_average.best_defense
+    game_team1_1 = GameTeam.new(game_team_1_info)
+    game_team1_2 = GameTeam.new(game_team_2_info)
+    game_team2_1 = GameTeam.new(game_team_3_info)
+    game_team2_2 = GameTeam.new(game_team_4_info)
+
+    @stat_tracker.game_team_collection.stubs(:all).returns([game_team1_1, game_team1_2,
+                                                         game_team2_1, game_team2_2])
+
+    assert_equal "John Tortorella", @stat_tracker.worst_coach("20122013")
   end
 
   def test_it_can_return_team_with_most_tackles
@@ -211,8 +207,12 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_return_least_accurate_team
-    assert_equal "Real Salt Lake", @stat_tracker_average.least_accurate_team("20122013")
-    assert_equal "Real Salt Lake", @stat_tracker_average.least_accurate_team("20132014")
+    assert_equal "Orlando Pride", @stat_tracker_average.least_accurate_team("20122013")
+    assert_equal "LA Galaxy", @stat_tracker_average.least_accurate_team("20132014")
+  end
+
+  def test_it_can_find_the_most_accurate_team
+    assert_equal "Real Salt Lake", @stat_tracker_average.most_accurate_team("20122013")
   end
 
   def test_it_can_return_best_fan
@@ -221,5 +221,123 @@ class StatTrackerTest < Minitest::Test
 
   def test_it_can_return_worst_fan
     assert_equal "FC Dallas", @stat_tracker_average.worst_fans
+  end
+
+  def test_it_can_find_the_biggest_bust
+    game_1_info = {game_id: "2012030221", season: "20122013", type: "Regular Season"}
+    game_2_info = {game_id: "2012030222", season: "20122013", type: "Regular Season"}
+    game_3_info = {game_id: "2012030223", season: "20122013", type: "Regular Season"}
+    game_4_info = {game_id: "2012030224", season: "20122013", type: "Postseason"}
+    game_5_info = {game_id: "2012030225", season: "20122013", type: "Postseason"}
+    game_6_info = {game_id: "2012030226", season: "20122013", type: "Postseason"}
+
+    game_team_1_1_info =  {game_id: "2012030221",team_id: "3",result: "WIN"}
+    game_team_1_2_info =  {game_id: "2012030221",team_id: "6",result: "LOSS"}
+    game_team_2_1_info =  {game_id: "2012030222",team_id: "3",result: "WIN"}
+    game_team_2_2_info =  {game_id: "2012030222",team_id: "6",result: "LOSS"}
+    game_team_3_1_info =  {game_id: "2012030223",team_id: "3",result: "LOSS"}
+    game_team_3_2_info =  {game_id: "2012030223",team_id: "6",result: "WIN"}
+    game_team_4_1_info =  {game_id: "2012030224",team_id: "3",result: "LOSS"}
+    game_team_4_2_info =  {game_id: "2012030224",team_id: "6",result: "WIN"}
+    game_team_5_1_info =  {game_id: "2012030225",team_id: "3",result: "LOSS"}
+    game_team_5_2_info =  {game_id: "2012030225",team_id: "6",result: "WIN"}
+    game_team_6_1_info =  {game_id: "2012030226",team_id: "3",result: "WIN"}
+    game_team_6_2_info =  {game_id: "2012030226",team_id: "6",result: "LOSS"}
+
+    game1 = Game.new(game_1_info)
+    game2 = Game.new(game_2_info)
+    game3 = Game.new(game_3_info)
+    game4 = Game.new(game_4_info)
+    game5 = Game.new(game_5_info)
+    game6 = Game.new(game_6_info)
+
+    game_team1 = GameTeam.new(game_team_1_1_info)
+    game_team2 = GameTeam.new(game_team_1_2_info)
+    game_team3 = GameTeam.new(game_team_2_1_info)
+    game_team4 = GameTeam.new(game_team_2_2_info)
+    game_team5 = GameTeam.new(game_team_3_1_info)
+    game_team6 = GameTeam.new(game_team_3_2_info)
+    game_team7 = GameTeam.new(game_team_4_1_info)
+    game_team8 = GameTeam.new(game_team_4_2_info)
+    game_team9 = GameTeam.new(game_team_5_1_info)
+    game_team10 = GameTeam.new(game_team_5_2_info)
+    game_team11 = GameTeam.new(game_team_6_1_info)
+    game_team12 = GameTeam.new(game_team_6_2_info)
+
+    @stat_tracker.game_collection.stubs(:all).returns([game1, game2, game3, game4, game5, game6])
+    @stat_tracker.game_team_collection.stubs(:all).returns([
+                                                            game_team1,
+                                                            game_team2,
+                                                            game_team3,
+                                                            game_team4,
+                                                            game_team5,
+                                                            game_team6,
+                                                            game_team7,
+                                                            game_team8,
+                                                            game_team9,
+                                                            game_team10,
+                                                            game_team11,
+                                                            game_team12
+                                                            ])
+    assert_equal "Houston Dynamo", @stat_tracker.biggest_bust("20122013")
+  end
+
+  def test_it_can_find_the_biggest_suprise
+    game_1_info = {game_id: "2012030221", season: "20122013", type: "Regular Season"}
+    game_2_info = {game_id: "2012030222", season: "20122013", type: "Regular Season"}
+    game_3_info = {game_id: "2012030223", season: "20122013", type: "Regular Season"}
+    game_4_info = {game_id: "2012030224", season: "20122013", type: "Postseason"}
+    game_5_info = {game_id: "2012030225", season: "20122013", type: "Postseason"}
+    game_6_info = {game_id: "2012030226", season: "20122013", type: "Postseason"}
+
+    game_team_1_1_info =  {game_id: "2012030221",team_id: "3",result: "WIN"}
+    game_team_1_2_info =  {game_id: "2012030221",team_id: "6",result: "LOSS"}
+    game_team_2_1_info =  {game_id: "2012030222",team_id: "3",result: "WIN"}
+    game_team_2_2_info =  {game_id: "2012030222",team_id: "6",result: "LOSS"}
+    game_team_3_1_info =  {game_id: "2012030223",team_id: "3",result: "LOSS"}
+    game_team_3_2_info =  {game_id: "2012030223",team_id: "6",result: "WIN"}
+    game_team_4_1_info =  {game_id: "2012030224",team_id: "3",result: "LOSS"}
+    game_team_4_2_info =  {game_id: "2012030224",team_id: "6",result: "WIN"}
+    game_team_5_1_info =  {game_id: "2012030225",team_id: "3",result: "LOSS"}
+    game_team_5_2_info =  {game_id: "2012030225",team_id: "6",result: "WIN"}
+    game_team_6_1_info =  {game_id: "2012030226",team_id: "3",result: "WIN"}
+    game_team_6_2_info =  {game_id: "2012030226",team_id: "6",result: "LOSS"}
+
+    game1 = Game.new(game_1_info)
+    game2 = Game.new(game_2_info)
+    game3 = Game.new(game_3_info)
+    game4 = Game.new(game_4_info)
+    game5 = Game.new(game_5_info)
+    game6 = Game.new(game_6_info)
+
+    game_team1 = GameTeam.new(game_team_1_1_info)
+    game_team2 = GameTeam.new(game_team_1_2_info)
+    game_team3 = GameTeam.new(game_team_2_1_info)
+    game_team4 = GameTeam.new(game_team_2_2_info)
+    game_team5 = GameTeam.new(game_team_3_1_info)
+    game_team6 = GameTeam.new(game_team_3_2_info)
+    game_team7 = GameTeam.new(game_team_4_1_info)
+    game_team8 = GameTeam.new(game_team_4_2_info)
+    game_team9 = GameTeam.new(game_team_5_1_info)
+    game_team10 = GameTeam.new(game_team_5_2_info)
+    game_team11 = GameTeam.new(game_team_6_1_info)
+    game_team12 = GameTeam.new(game_team_6_2_info)
+
+    @stat_tracker.game_collection.stubs(:all).returns([game1, game2, game3, game4, game5, game6])
+    @stat_tracker.game_team_collection.stubs(:all).returns([
+                                                            game_team1,
+                                                            game_team2,
+                                                            game_team3,
+                                                            game_team4,
+                                                            game_team5,
+                                                            game_team6,
+                                                            game_team7,
+                                                            game_team8,
+                                                            game_team9,
+                                                            game_team10,
+                                                            game_team11,
+                                                            game_team12
+                                                            ])
+    assert_equal "FC Dallas", @stat_tracker.biggest_surprise("20122013")
   end
 end

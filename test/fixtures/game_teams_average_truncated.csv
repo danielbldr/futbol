@@ -9,13 +9,13 @@ game_id,team_id,HoA,result,settled_in,head_coach,goals,shots,tackles,pim,powerPl
 2012030224,3,home,LOSS,OT,John Tortorella,2,8,40,8,4,1,46.3,9,7
 2012030225,3,away,LOSS,REG,John Tortorella,1,7,25,13,2,1,50.9,5,3
 2012030225,6,home,WIN,REG,Claude Julien,3,8,35,11,3,1,49.1,12,9
-2013020674,19,away,WIN,REG,Ken Hitchcock,4,7,19,4,1,0,40.3,2,7
-2013020674,23,home,LOSS,REG,John Tortorella,2,5,14,2,2,0,59.7,6,4
-2013020177,24,away,WIN,REG,Bruce Boudreau,7,9,23,6,2,0,52.9,6,12
-2013020177,4,home,LOSS,REG,Craig Berube,2,7,35,4,3,1,47.1,16,10
 2012020225,29,away,LOSS,REG,Todd Richards,1,6,22,6,3,0,47.6,3,4
 2012020225,24,home,WIN,REG,Bruce Boudreau,3,7,24,6,3,2,52.4,6,8
 2012020577,12,away,LOSS,REG,Kirk Muller,2,10,20,4,1,0,52.7,3,11
 2012020577,6,home,WIN,REG,Claude Julien,4,9,15,2,2,0,47.3,10,3
 2013021085,17,away,TIE,REG,Mike Babcock,2,8,32,8,2,0,41.7,4,3
 2013021085,29,home,TIE,REG,Todd Richards,2,7,33,6,4,2,58.3,5,5
+2013020674,19,away,WIN,REG,Ken Hitchcock,4,7,19,4,1,0,40.3,2,7
+2013020674,23,home,LOSS,REG,John Tortorella,2,5,14,2,2,0,59.7,6,4
+2013020177,24,away,WIN,REG,Bruce Boudreau,7,9,23,6,2,0,52.9,6,12
+2013020177,4,home,LOSS,REG,Craig Berube,2,7,35,4,3,1,47.1,16,10

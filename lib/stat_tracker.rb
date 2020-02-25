@@ -158,57 +158,47 @@ class StatTracker
     @team_collection.where_id(worst_team)
   end
 
-  def winningest_team
-    winningest_team_hash.max_by{|team, percent| percent}.first
+  #uses only game_collection
+  def percentage_home_wins
+    home_wins = @game_collection.games.find_all {|game| game.home_goals > game.away_goals}
+    home_wins.length.to_f / (@game_collection.games.length.to_f).round(2)
   end
 
-  def best_fans
-    away_teams = {}
-    hometeams ={}
+  #uses only game_collection
+  def percentage_visitor_wins
+    away_wins = @game_collection.games.find_all {|game| game.home_goals < game.away_goals}
+    away_wins.length.to_f / (@game_collection.games.length.to_f).round(2)
+  end
 
-      @game_team_collection.games_by_teams.each do |gameteam|
-      hometeams[gameteam.team_id] = gameteam.home_or_away if gameteam.home_or_away == "home"
-      away_teams[gameteam.team_id] = gameteam.home_or_away if gameteam.home_or_away == "away"
-    end
-    away_teams
-    hometeams
-    require "pry"; binding.pry
+  #uses only game_collection
+  def percentage_ties
+    tied_games = @game_collection.games.find_all {|game| game.home_goals == game.away_goals}
+    tied_games.lengtht.to_f / (@game_collection.games.length.to_f).round(2)
   end
 
   #uses game and game_team collections.
   def winningest_coach(for_season) # the game_ids can tell you what season there from. first 4 numbers of id will match the first 4 from season.
-    games_by_season = @game_collection.all.group_by{|game| game.season}           # games_by_season 3rd occurance
-    games_for_season = games_by_season.fetch_values(for_season).flatten
-
-    game_teams = games_for_season.map do |game|
-      @game_team_collection.where(:game_id, game.game_id)
-    end.flatten
-
+    game_teams = @game_team_collection.all.find_all do |game|
+       game.game_id.to_s[0,4] == for_season[0,4]
+    end
     game_team_by_coach = game_teams.group_by { |game| game.head_coach }
-
     game_team_by_coach.each do |key, value|
        percent = value.count{|game| game.result == "WIN"}/value.length.to_f
        game_team_by_coach[key] = percent
     end
-
     game_team_by_coach.key(game_team_by_coach.values.max)
   end
 
+  #uses game and game_team_collection
   def worst_coach(for_season)
-    games_by_season = @game_collection.all.group_by{|game| game.season}           # games_by_season 3rd occurance
-    games_for_season = games_by_season.fetch_values(for_season).flatten
-
-    game_teams = games_for_season.map do |game|
-      @game_team_collection.where(:game_id, game.game_id)
-    end.flatten
-
+    game_teams = @game_team_collection.all.find_all do |game|
+       game.game_id.to_s[0,4] == for_season[0,4]
+    end
     game_team_by_coach = game_teams.group_by { |game| game.head_coach }
-
     game_team_by_coach.each do |key, value|
        percent = value.count{|game| game.result == "WIN"}/value.length.to_f
        game_team_by_coach[key] = percent
      end
-
     game_team_by_coach.key(game_team_by_coach.values.min)
   end
 
@@ -240,14 +230,14 @@ class StatTracker
     @team_collection.where_id(tackles_by_team.key(tackles_by_team.values.min))
   end
 
-  def least_accurate_team(season)
+  def least_accurate_team(season) #maybe refactor to do shots/attempts.
     shot_ratio_by_team = {}
     @game_team_collection.all.each do |game|
       if game.game_id.to_s.start_with?(season[0..3])
         if shot_ratio_by_team.has_key?(game.team_id)
-          shot_ratio_by_team[game.team_id] << game.shots/game.goals.to_f.round(2)
+          shot_ratio_by_team[game.team_id] << (game.goals.to_f/game.shots).round(2)
         else
-          shot_ratio_by_team[game.team_id] = [game.shots/game.goals.to_f.round(2)]
+          shot_ratio_by_team[game.team_id] = [(game.goals.to_f/game.shots).round(2)]
         end
       end
     end
@@ -255,6 +245,23 @@ class StatTracker
       array.sum/array.length
     end
     @team_collection.where_id(shot_ratio_by_team.key(shot_ratio_by_team.values.min))
+  end
+
+  def most_accurate_team(season)
+    shot_ratio_by_team = {}
+    @game_team_collection.all.each do |game|
+      if game.game_id.to_s.start_with?(season[0..3])
+        if shot_ratio_by_team.has_key?(game.team_id)
+          shot_ratio_by_team[game.team_id] << (game.goals.to_f/game.shots).round(2)
+        else
+          shot_ratio_by_team[game.team_id] = [(game.goals.to_f/game.shots).round(2)]
+        end
+      end
+    end
+    shot_ratio_by_team.transform_values! do |array|
+      array.sum/array.length
+    end
+    @team_collection.where_id(shot_ratio_by_team.key(shot_ratio_by_team.values.max))
   end
 
   def best_fans
@@ -303,5 +310,91 @@ class StatTracker
     home_minus_away = away_hash.merge(home_hash){|key, oldval, newval| newval - oldval}
     worst_team = home_minus_away.key(home_minus_away.values.min)
     @team_collection.where_id(worst_team)
+  end
+
+  def biggest_bust(season)
+    regular = []
+    post = []
+    @game_collection.all.each do |game|
+      if game.season == season && game.type == "Postseason"
+        post << game.game_id
+      elsif game.season == season && game.type == "Regular Season"
+        regular << game.game_id
+      end
+    end
+##
+    game_teams_regular = @game_team_collection.all.find_all do |game_team|
+      regular.include?(game_team.game_id)
+    end
+    game_teams_post = @game_team_collection.all.find_all do |game_team|
+      post.include?(game_team.game_id)
+    end
+
+    game_teams_regular = @game_team_collection.all.reduce({}) do |accum, game_team|
+      if regular.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
+        accum[game_team.team_id] << game_team.result
+      elsif regular.include?(game_team.game_id)
+        accum[game_team.team_id] = [game_team.result]
+      end
+      accum
+    end
+
+    game_teams_post = @game_team_collection.all.reduce({}) do |accum,game_team|
+      if post.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
+        accum[game_team.team_id] << game_team.result
+      elsif post.include?(game_team.game_id)
+        accum[game_team.team_id] = [game_team.result]
+      end
+      accum
+    end
+
+    game_teams_regular.transform_values! { |result| result.count("WIN")/result.length.to_f }
+    game_teams_post.transform_values! { |result| result.count("WIN")/result.length.to_f }
+    post_minus_regular = game_teams_regular.merge(game_teams_post){|key, oldval, newval| newval - oldval}
+    worst_team = post_minus_regular.key(post_minus_regular.values.min)
+    @team_collection.where_id(worst_team)
+  end
+
+  def biggest_surprise(season)
+    regular = []
+    post = []
+    @game_collection.all.each do |game|
+      if game.season == season && game.type == "Postseason"
+        post << game.game_id
+      elsif game.season == season && game.type == "Regular Season"
+        regular << game.game_id
+      end
+    end
+
+    game_teams_regular = @game_team_collection.all.find_all do |game_team|
+      regular.include?(game_team.game_id)
+    end
+    game_teams_post = @game_team_collection.all.find_all do |game_team|
+      post.include?(game_team.game_id)
+    end
+
+    game_teams_regular = @game_team_collection.all.reduce({}) do |accum, game_team|
+      if regular.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
+        accum[game_team.team_id] << game_team.result
+      elsif regular.include?(game_team.game_id)
+        accum[game_team.team_id] = [game_team.result]
+      end
+      accum
+    end
+
+    game_teams_post = @game_team_collection.all.reduce({}) do |accum,game_team|
+      if post.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
+        accum[game_team.team_id] << game_team.result
+      elsif post.include?(game_team.game_id)
+        accum[game_team.team_id] = [game_team.result]
+      end
+      accum
+    end
+
+    game_teams_regular.transform_values! { |result| result.count("WIN")/result.length.to_f }
+    game_teams_post.transform_values! { |result| result.count("WIN")/result.length.to_f }
+    post_minus_regular = game_teams_regular.merge(game_teams_post){|key, oldval, newval| newval - oldval}
+    best_team = post_minus_regular.key(post_minus_regular.values.max)
+    @team_collection.where_id(best_team)
   end
 end
