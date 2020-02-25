@@ -149,7 +149,27 @@ class StatTracker
   #uses only game_collection
   def percentage_ties
     tied_games = @game_collection.games.find_all {|game| game.home_goals == game.away_goals}
+<<<<<<< HEAD
     (tied_games.length.to_f / @game_collection.games.length.to_f).round(2)
+=======
+    (tied_games.lengtht.to_f / @game_collection.games.length.to_f).round(2)
+  end
+
+  def lowest_scoring_home_team_hash
+    home_team = {}
+    @game_team_collection.games_by_teams.each do |gameteam|
+      if gameteam.home_or_away == "home" && @team_collection.teams.each do |team|
+          team.team_id
+          home_team[team.team_name] = gameteam.goals if team.team_id == gameteam.team_id
+        end
+      end
+    end
+    home_team
+  end
+
+  def lowest_scoring_home_team
+    lowest_scoring_home_team_hash.min_by{|name, goal| goal}.first
+>>>>>>> d2b4660a131b29756d843d2c360900d89d089ed2
   end
 
   #uses game and game_team collections.
