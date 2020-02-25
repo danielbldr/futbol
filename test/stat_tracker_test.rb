@@ -68,9 +68,7 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_get_tied_percentage ## refactor with new data pool to grab real percentage instead of stub
-    @stat_tracker.stubs(:percentage_ties).returns(0.10)
-
-    assert 0.10, @stat_tracker.percentage_ties
+    assert_equal 0.2, @stat_tracker_average.percentage_ties
   end
 
   def test_it_can_count_number_of_teams
