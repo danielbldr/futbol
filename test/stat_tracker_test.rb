@@ -314,5 +314,4 @@ class StatTrackerTest < Minitest::Test
                                                             ])
     assert_equal "FC Dallas", @stat_tracker.biggest_surprise("20122013")
   end
->>>>>>> 43852ff13d113e88d545375e29a8d557dba1d9e3
 end
