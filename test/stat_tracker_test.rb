@@ -68,9 +68,24 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_get_tied_percentage ## refactor with new data pool to grab real percentage instead of stub
-    @stat_tracker.stubs(:percentage_ties).returns(0.10)
 
-    assert 0.10, @stat_tracker.percentage_ties
+    assert 0.2, @stat_tracker.percentage_ties
+  end
+
+  def test_it_can_lowest_scoring_home_team_hash
+    expected = {
+      "FC Dallas" => 4,
+      "Houston Dynamo" => 2,
+      "Montreal Impact" => 2,
+      "Chicago Fire" => 2,
+      "Real Salt Lake" => 3,
+      "Orlando Pride" => 2
+    }
+    assert_equal expected, @stat_tracker.lowest_scoring_home_team_hash
+  end
+
+  def test_it_can_lowest_scoring_home_team
+    assert_equal "Houston Dynamo", @stat_tracker.lowest_scoring_home_team
   end
 
   def test_it_can_count_number_of_teams
@@ -93,7 +108,6 @@ class StatTrackerTest < Minitest::Test
     assert_equal "Chicago Fire", @stat_tracker_average.worst_defense
   end
 
-<<<<<<< HEAD
   def test_it_can_return_highest_scoring_visitor
     assert_equal "Real Salt Lake", @stat_tracker_average.highest_scoring_visitor
   end
@@ -106,7 +120,6 @@ class StatTrackerTest < Minitest::Test
     assert_equal "Orlando Pride", @stat_tracker_average.lowest_scoring_visitor
   end
 
-=======
   def test_it_can_find_the_winningest_coach_by_season #I need a better data pool for this
     assert_equal "Bruce Boudreau", @stat_tracker_average.winningest_coach("20122013")
   end
