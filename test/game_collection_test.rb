@@ -58,7 +58,7 @@ class GameCollectionTest < Minitest::Test
     @game_collection.create_game_collection
     expected = [5, 5, 3, 5, 4, 3, 5, 5, 6, 4]
 
-    assert_equal expected, @game_collection.total_goals_per_game
+    assert_equal expected, @game_collection.total_goals_per_game(@game_collection.all)
   end
 
   def test_it_can_return_all_games
@@ -75,5 +75,32 @@ class GameCollectionTest < Minitest::Test
 
     assert_equal season_expected, @game_collection.array_by_key(:season)
     assert_equal game_id_expected, @game_collection.array_by_key(:game_id)
+  end
+
+  def test_it_can_count_the_games_by_season
+    @game_collection.create_game_collection
+    expected = {"20122013"=>7, "20132014"=>3}
+
+    assert_equal expected, @game_collection.count_of_games_by_season
+  end
+
+  def test_it_can_return_games_by_season
+    @game_collection.create_game_collection
+    game_1_info = {game_id: "2012030221", season: "20122013", type: "Regular Season"}
+    game_2_info = {game_id: "2012030222", season: "20132014", type: "Regular Season"}
+    game1 = Game.new(game_1_info)
+    game2 = Game.new(game_2_info)
+    @game_collection.stubs(:all).returns([game1, game2])
+    expected = {"20122013" => [game1],
+                "20132014" => [game2]}
+
+    assert_equal expected, @game_collection.games_by_season
+  end
+
+  def test_it_can_return_average_goal_by_season
+    @game_collection.create_game_collection
+    expected = {"20122013"=>4.71, "20132014"=>4.00}
+
+    assert_equal expected, @game_collection.average_goals_by_season
   end
 end

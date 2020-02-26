@@ -68,20 +68,7 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_get_tied_percentage ## refactor with new data pool to grab real percentage instead of stub
-
-    assert 0.2, @stat_tracker.percentage_ties
-  end
-
-  def test_it_can_lowest_scoring_home_team_hash
-    expected = {
-      "FC Dallas" => 4,
-      "Houston Dynamo" => 2,
-      "Montreal Impact" => 2,
-      "Chicago Fire" => 2,
-      "Real Salt Lake" => 3,
-      "Orlando Pride" => 2
-    }
-    assert_equal expected, @stat_tracker.lowest_scoring_home_team_hash
+    assert_equal 0.27, @stat_tracker_average.percentage_ties
   end
 
   def test_it_can_lowest_scoring_home_team
@@ -101,7 +88,7 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_find_the_best_defense
-    assert_equal "Real Salt Lake", @stat_tracker_average.best_defense
+    assert_equal "LA Galaxy", @stat_tracker_average.best_defense
   end
 
   def test_it_can_find_the_worst_defense
@@ -314,5 +301,23 @@ class StatTrackerTest < Minitest::Test
                                                             ])
     assert_equal "FC Dallas", @stat_tracker.biggest_surprise("20122013")
   end
->>>>>>> 43852ff13d113e88d545375e29a8d557dba1d9e3
+
+  def test_winningest_team_hash
+    expected = {
+      "Houston Dynamo"=>50.9,
+      "FC Dallas"=>47.3,
+      "Philadelphia Union"=>40.3,
+      "Montreal Impact"=>59.7,
+      "Real Salt Lake"=>52.4,
+      "Chicago Fire"=>47.1,
+      "Orlando Pride"=>58.3,
+      "Sky Blue FC"=>52.7,
+      "LA Galaxy"=>41.7
+    }
+    assert_equal expected, @stat_tracker.winningest_team_hash
+  end
+  
+  def test_winningest_team
+    assert_equal "Montreal Impact", @stat_tracker.winningest_team
+  end
 end
