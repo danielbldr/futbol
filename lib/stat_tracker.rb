@@ -1,8 +1,10 @@
 require_relative "team_collection"
 require_relative "game_team_collection"
 require_relative "game_collection"
+require_relative "calculable"
 
 class StatTracker
+  include Calculable
 
   def self.from_csv(csv_file_paths)
     self.new(csv_file_paths)
@@ -19,44 +21,29 @@ class StatTracker
   end
 
   def highest_total_score
-    @game_collection.total_goals_per_game.max
+    @game_collection.total_goals_per_game(@game_collection.all).max
   end
 
   def lowest_total_score
-    @game_collection.total_goals_per_game.min
+    @game_collection.total_goals_per_game(@game_collection.all).min
   end
 
   def biggest_blowout
     @game_collection.games.map {|game| (game.away_goals - game.home_goals).abs}.max
   end
 
-  # This only requires game information.
-  # It should probably move to game collection eventually.
   def count_of_games_by_season
-    games_by_season = @game_collection.all.group_by{|game| game.season}         #games_by_season 1st occurance
-    games_by_season.transform_values!{|games| games.length}
+    @game_collection.count_of_games_by_season
   end
 
-  # This only requires game information.
-  # It should probably move to game collection eventually.
   def average_goals_per_game
-    all_goals = @game_collection.total_goals_per_game
-    (all_goals.sum / all_goals.length.to_f).round(2)                            # create module with average method??
-
+    average(@game_collection.total_goals_per_game(@game_collection.all))
   end
 
-  # This only requires game information.
-  # It should probably move to game collection eventually.
   def average_goals_by_season
-    games_by_season = @game_collection.all.group_by{|game| game.season}         #games_by_season 2nd occurance
-    games_by_season.transform_values! do |games|
-      all_goals = games.map{|game| game.away_goals + game.home_goals}
-      (all_goals.sum/all_goals.length.to_f).round(2)                            #average_calculation
-    end
+    @game_collection.average_goals_by_season
   end
 
-  # This only requires team information.
-  # It should probably move to team collection eventually.
   def count_of_teams
     @team_collection.teams.length
   end
@@ -149,23 +136,27 @@ class StatTracker
   #uses only game_collection
   def percentage_ties
     tied_games = @game_collection.games.find_all {|game| game.home_goals == game.away_goals}
-    (tied_games.lengtht.to_f / @game_collection.games.length.to_f).round(2)
+    (tied_games.length.to_f / @game_collection.games.length.to_f).round(2)
   end
 
-  def lowest_scoring_home_team_hash
-    home_team = {}
-    @game_team_collection.games_by_teams.each do |gameteam|
-      if gameteam.home_or_away == "home" && @team_collection.teams.each do |team|
-          team.team_id
-          home_team[team.team_name] = gameteam.goals if team.team_id == gameteam.team_id
-        end
-      end
-    end
-    home_team
-  end
 
   def lowest_scoring_home_team
-    lowest_scoring_home_team_hash.min_by{|name, goal| goal}.first
+    home_team_goals = @game_collection.all.reduce({}) do |goals_by_team, game|
+      if goals_by_team.has_key?(game.home_team_id)
+        goals_by_team[game.home_team_id] << game.home_goals
+      else
+        goals_by_team[game.home_team_id] = [game.home_goals]
+      end
+      goals_by_team
+    end
+
+    average_home_goals = home_team_goals.transform_values do |goals|
+      goals.sum/goals.length.to_f
+    end
+
+    worst_team = average_home_goals.key(average_home_goals.values.min)
+
+    @team_collection.where_id(worst_team)
   end
 
   #uses game and game_team collections.
@@ -414,26 +405,22 @@ class StatTracker
   end
 
   def highest_scoring_home_team
-    home_team_goals = @team_collection.all.reduce({}) do |hash, team|
-      hash[team.team_id] = []
-      hash
-    end
-
-    @game_collection.all.each do |game|
-      home_team_goals[game.home_team_id] << game.home_goals
+    home_team_goals = @game_collection.all.reduce({}) do |goals_by_team, game|
+      if goals_by_team.has_key?(game.home_team_id)
+        goals_by_team[game.home_team_id] << game.home_goals
+      else
+        goals_by_team[game.home_team_id] = [game.home_goals]
+      end
+      goals_by_team
     end
 
     average_home_goals = home_team_goals.transform_values do |goals|
-      (goals.sum/goals.length.to_f) if goals != []# average calculation
+      goals.sum/goals.length.to_f
     end
 
-    highest_average = average_home_goals.values.max
+    best_team = average_home_goals.key(average_home_goals.values.max)
 
-    best_team = average_home_goals.key(highest_average)
-
-    @team_collection.all.find do |team| # This snippet should move to team_collection as a #where(:key, value), ie where(team_id, 6)
-      team.team_id == best_team
-    end.team_name
+    @team_collection.where_id(best_team)
   end
 
   def lowest_scoring_visitor
@@ -458,4 +445,21 @@ class StatTracker
       team.team_id == worst_team
     end.team_name
   end
+
+def winningest_team_hash
+  winpercent = {}
+  @game_team_collection.games_by_teams.each do |gameteam|
+   if gameteam.team_id == @team_collection.teams.each do |team|
+     winpercent[team.team_name] =
+     gameteam.face_of_win_percentage if team.team_id == gameteam.team_id
+    end
+   end
+  end
+  winpercent
+end #uses both team and game collections.
+
+ def winningest_team
+  winningest_team_hash.max_by{|team, percent| percent}.first
+ end
+
 end
