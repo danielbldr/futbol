@@ -1,7 +1,9 @@
 require_relative 'game'
+require_relative 'calculable'
 require 'csv'
 
 class GameCollection
+  include Calculable
   attr_reader :games, :csv_file_path
 
   def initialize(csv_file_path)
@@ -23,8 +25,8 @@ class GameCollection
     end
   end
 
-  def total_goals_per_game
-    @games.map {|game| game.away_goals + game.home_goals}
+  def total_goals_per_game(array)
+    array.map {|game| game.away_goals + game.home_goals}
   end
 
   def all
@@ -41,5 +43,11 @@ class GameCollection
 
   def count_of_games_by_season
     games_by_season.transform_values!{|games| games.length}
+  end
+
+  def average_goals_by_season
+    games_by_season.transform_values! do |games|
+      average(total_goals_per_game(games))
+    end
   end
 end

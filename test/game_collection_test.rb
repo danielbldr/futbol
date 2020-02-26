@@ -58,7 +58,7 @@ class GameCollectionTest < Minitest::Test
     @game_collection.create_game_collection
     expected = [5, 5, 3, 5, 4, 3, 5, 5, 6, 4]
 
-    assert_equal expected, @game_collection.total_goals_per_game
+    assert_equal expected, @game_collection.total_goals_per_game(@game_collection.all)
   end
 
   def test_it_can_return_all_games
@@ -95,5 +95,12 @@ class GameCollectionTest < Minitest::Test
                 "20132014" => [game2]}
 
     assert_equal expected, @game_collection.games_by_season
+  end
+
+  def test_it_can_return_average_goal_by_season
+    @game_collection.create_game_collection
+    expected = {"20122013"=>4.71, "20132014"=>4.00}
+
+    assert_equal expected, @game_collection.average_goals_by_season
   end
 end
