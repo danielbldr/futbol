@@ -181,7 +181,7 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_return_worst_fan
-    assert_equal "FC Dallas", @stat_tracker_average.worst_fans
+    assert_equal ["Philadelphia Union"], @stat_tracker_average.worst_fans
   end
 
   def test_it_can_find_the_biggest_bust
@@ -302,22 +302,7 @@ class StatTrackerTest < Minitest::Test
     assert_equal "FC Dallas", @stat_tracker.biggest_surprise("20122013")
   end
 
-  def test_winningest_team_hash
-    expected = {
-      "Houston Dynamo"=>50.9,
-      "FC Dallas"=>47.3,
-      "Philadelphia Union"=>40.3,
-      "Montreal Impact"=>59.7,
-      "Real Salt Lake"=>52.4,
-      "Chicago Fire"=>47.1,
-      "Orlando Pride"=>58.3,
-      "Sky Blue FC"=>52.7,
-      "LA Galaxy"=>41.7
-    }
-    assert_equal expected, @stat_tracker.winningest_team_hash
-  end
-
   def test_winningest_team
-    assert_equal "Montreal Impact", @stat_tracker.winningest_team
+    assert_equal "Real Salt Lake", @stat_tracker_average.winningest_team
   end
 end

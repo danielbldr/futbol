@@ -214,53 +214,62 @@ class StatTracker
   end
 
   def least_accurate_team(season) #maybe refactor to do shots/attempts.
-    shot_ratio_by_team = {}
-    @game_team_collection.all.each do |game|
-      if game.game_id.to_s.start_with?(season[0..3])
-        if shot_ratio_by_team.has_key?(game.team_id)
-          shot_ratio_by_team[game.team_id] << (game.goals.to_f/game.shots).round(2)
-        else
-          shot_ratio_by_team[game.team_id] = [(game.goals.to_f/game.shots).round(2)]
-        end
+    games_of_season = @game_team_collection.all.find_all do |game_team|
+      game_team.game_id.to_s[0,4] == season[0,4]
+    end
+
+    goals_and_shots = games_of_season.reduce({}) do |accum, game|
+      if accum.has_key?(game.team_id)
+        accum[game.team_id][:shots] += game.shots
+        accum[game.team_id][:goals] += game.goals
+      else
+        accum[game.team_id] = {shots: game.shots, goals: game.goals}
       end
+      accum
     end
-    shot_ratio_by_team.transform_values! do |array|
-      array.sum/array.length
+
+    goals_and_shots.transform_values! do |game|
+      game[:goals]/game[:shots].to_f
     end
-    @team_collection.where_id(shot_ratio_by_team.key(shot_ratio_by_team.values.min))
+    @team_collection.where_id(goals_and_shots.key(goals_and_shots.values.min))
   end
 
   def most_accurate_team(season)
-    shot_ratio_by_team = {}
-    @game_team_collection.all.each do |game|
-      if game.game_id.to_s.start_with?(season[0..3])
-        if shot_ratio_by_team.has_key?(game.team_id)
-          shot_ratio_by_team[game.team_id] << (game.goals.to_f/game.shots).round(2)
-        else
-          shot_ratio_by_team[game.team_id] = [(game.goals.to_f/game.shots).round(2)]
-        end
+    games_of_season = @game_team_collection.all.find_all do |game_team|
+      game_team.game_id.to_s[0,4] == season[0,4]
+    end
+
+    goals_and_shots = games_of_season.reduce({}) do |accum, game|
+      if accum.has_key?(game.team_id)
+        accum[game.team_id][:shots] += game.shots
+        accum[game.team_id][:goals] += game.goals
+      else
+        accum[game.team_id] = {shots: game.shots, goals: game.goals}
       end
+      accum
     end
-    shot_ratio_by_team.transform_values! do |array|
-      array.sum/array.length
+
+    goals_and_shots.transform_values! do |game|
+      game[:goals]/game[:shots].to_f
     end
-    @team_collection.where_id(shot_ratio_by_team.key(shot_ratio_by_team.values.max))
+    @team_collection.where_id(goals_and_shots.key(goals_and_shots.values.max))
   end
 
+# can try to put both best/worstfans in game_team_collection
   def best_fans
     home_hash = @game_team_collection.all.reduce({}) do |accum, game|
       if accum.has_key?(game.team_id) && game.home_or_away == 'home'
         accum[game.team_id] << game.result
-      else
-        accum[game.team_id] = [game.result] if game.home_or_away == 'home'
+      elsif game.home_or_away == 'home'
+        accum[game.team_id] = [game.result]
       end
       accum
     end
     away_hash = @game_team_collection.all.reduce({}) do |accum, game|
-      if accum.has_key?(game.team_id)
-        accum[game.team_id] << game.result && game.home_or_away == "away"
-      else
-        accum[game.team_id] = [game.result] if game.home_or_away == "away"
+      if accum.has_key?(game.team_id) && game.home_or_away == "away"
+        accum[game.team_id] << game.result
+      elsif game.home_or_away == "away"
+        accum[game.team_id] = [game.result]
       end
       accum
     end
@@ -272,28 +281,42 @@ class StatTracker
   end
 
   def worst_fans
-    home_hash = @game_team_collection.all.reduce({}) do |accum, game|
-      if accum.has_key?(game.team_id) && game.home_or_away == 'home'
-        accum[game.team_id] << game.result
-      else
-        accum[game.team_id] = [game.result] if game.home_or_away == 'home'
-      end
-      accum
+    team_id = []
+    games_by_teams = @game_team_collection.all.group_by do |game|
+      game.team_id
     end
-    away_hash = @game_team_collection.all.reduce({}) do |accum, game|
-      if accum.has_key?(game.team_id)
-        accum[game.team_id] << game.result && game.home_or_away == "away"
-      else
-        accum[game.team_id] = [game.result] if game.home_or_away == "away"
+    games_by_teams.each do |team, games|
+      away_wins = games.count{|game| game.home_or_away == "away" && game.result == "WIN"}
+      home_wins = games.count{|game| game.home_or_away == "home" && game.result == "WIN"}
+      if away_wins > home_wins
+        team_id << team
       end
-      accum
     end
-    home_hash.transform_values! { |stats| stats.count("WIN")/stats.length.to_f }
-    away_hash.transform_values! { |stats| stats.count("WIN")/stats.length.to_f }
-    home_minus_away = away_hash.merge(home_hash){|key, oldval, newval| newval - oldval}
-    worst_team = home_minus_away.key(home_minus_away.values.min)
-    @team_collection.where_id(worst_team)
+    team_id.map{|id| @team_collection.where_id(id)}
   end
+    # home_hash = @game_team_collection.all.reduce({}) do |accum, game|
+    #   if accum.has_key?(game.team_id) && game.home_or_away == 'home'
+    #     accum[game.team_id] << game.result
+    #   else
+    #     accum[game.team_id] = [game.result] if game.home_or_away == 'home'
+    #   end
+    #   accum
+    # end
+    # away_hash = @game_team_collection.all.reduce({}) do |accum, game|
+    #   if accum.has_key?(game.team_id)
+    #     accum[game.team_id] << game.result && game.home_or_away == "away"
+    #   else
+    #     accum[game.team_id] = [game.result] if game.home_or_away == "away"
+    #   end
+    #   accum
+    # end
+    # home_hash.transform_values! { |stats| stats.count("WIN")} #/stats.length.to_f }
+    # away_hash.transform_values! { |stats| stats.count("WIN")} #/stats.length.to_f }
+    # home_minus_away = away_hash.merge(home_hash){|key, oldval, newval| (newval - oldval).round(2)}
+    # worst_team = home_minus_away.keep_if {|team, score| score < 0}
+    # require "pry"; binding.pry
+    # worst_team = home_minus_away.key(home_minus_away.values.min)
+    # @team_collection.where_id(worst_team)
 
   def biggest_bust(season)
     regular = []
@@ -446,20 +469,13 @@ class StatTracker
     end.team_name
   end
 
-def winningest_team_hash
-  winpercent = {}
-  @game_team_collection.games_by_teams.each do |gameteam|
-   if gameteam.team_id == @team_collection.teams.each do |team|
-     winpercent[team.team_name] =
-     gameteam.face_of_win_percentage if team.team_id == gameteam.team_id
-    end
-   end
-  end
-  winpercent
-end #uses both team and game collections.
-
  def winningest_team
-  winningest_team_hash.max_by{|team, percent| percent}.first
+  gameteamhash = @game_team_collection.all.group_by {|game| game.team_id}
+  gameteamhash.transform_values! do |game|
+    (game.count {|game| game.result == "WIN"}) / game.length.to_f
+  end
+  best_team = gameteamhash.key(gameteamhash.values.max)
+  @team_collection.where_id(best_team)
  end
 
 end
