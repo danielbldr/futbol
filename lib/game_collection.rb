@@ -50,4 +50,34 @@ class GameCollection
       average(total_goals_per_game(games))
     end
   end
+
+  def percentage_home_wins
+    home_wins = all.find_all {|game| game.home_goals > game.away_goals}
+    percentage(home_wins, all)
+  end
+
+  def percentage_visitor_wins
+    visitor_wins = all.find_all {|game| game.home_goals < game.away_goals}
+    percentage(visitor_wins, all)
+  end
+
+  def percentage_ties
+    ties = all.find_all {|game| game.home_goals == game.away_goals}
+    percentage(ties, all)
+  end
+
+  def lowest_scoring_home_team_id
+    home_team_goals = all.reduce({}) do |goals_by_team, game|
+      if goals_by_team.has_key?(game.home_team_id)
+        goals_by_team[game.home_team_id] << game.home_goals
+      else
+        goals_by_team[game.home_team_id] = [game.home_goals]
+      end
+      goals_by_team
+    end
+    average_home_goals = home_team_goals.transform_values do |goals|
+      average(goals)
+    end
+    average_home_goals.key(average_home_goals.values.min)
+  end
 end

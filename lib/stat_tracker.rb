@@ -48,36 +48,12 @@ class StatTracker
     @team_collection.teams.length
   end
 
-  # uses both team and game_team collections
   def best_offense
-    games_by_team = @game_team_collection.all.group_by{|game| game.team_id}
-    average_goals_by_team = games_by_team.transform_values do |games|
-      ((games.map{|game| game.goals}.sum)/games.length.to_f)                      # average calculation
-    end
-    best_team = average_goals_by_team.key(average_goals_by_team.values.max)
-    @team_collection.where_id(best_team)
+    @team_collection.where_id(@game_team_collection.is_best_offense(true))
   end
 
-  # uses both team and game_team collections
   def worst_offense
-    games_by_team = @game_team_collection.all.group_by{|game| game.team_id}
-    team_ids = @team_collection.all.map{|team| team.team_id}  # This could be shifted to use the game_team_collection data, just use a #uniq at the end
-
-    games_by_team = team_ids.reduce({}) do |games_by_team, team_id| # this snippet would better serve us in the game_team collection to be used by other methods
-      games = @game_team_collection.all.find_all do |game_team|
-         game_team.team_id == team_id
-      end
-      games_by_team[team_id] = games
-      games_by_team
-    end
-
-    games_by_team = @game_team_collection.all.group_by{|game| game.team_id}
-
-    average_goals_by_team = games_by_team.transform_values do |games|
-      ((games.map{|game| game.goals}.sum)/games.length.to_f)                      # average calculation
-    end
-    worst_team = average_goals_by_team.key(average_goals_by_team.values.min)
-    @team_collection.where_id(worst_team)
+    @team_collection.where_id(@game_team_collection.is_best_offense(false))
   end
 
   #uses both team and game collections.
@@ -91,7 +67,7 @@ class StatTracker
       goals_against_by_team[game.away_team_id] << game.home_goals
     end
     goals_against_by_team.transform_values! do |goals|
-      goals.sum/goals.length.to_f                                                 # average calcultion
+      average(goals)
     end
     best_defense = goals_against_by_team.key(goals_against_by_team.values.min)
     @team_collection.where_id(best_defense)
@@ -121,42 +97,20 @@ class StatTracker
     @team_collection.where_id(worst_team)
   end
 
-  #uses only game_collection
   def percentage_home_wins
-    home_wins = @game_collection.games.find_all {|game| game.home_goals > game.away_goals}
-    (home_wins.length.to_f / @game_collection.games.length.to_f).round(2)
+    @game_collection.percentage_home_wins
   end
 
-  #uses only game_collection
   def percentage_visitor_wins
-    away_wins = @game_collection.games.find_all {|game| game.home_goals < game.away_goals}
-    (away_wins.length.to_f / @game_collection.games.length.to_f).round(2)
+    @game_collection.percentage_visitor_wins
   end
 
-  #uses only game_collection
   def percentage_ties
-    tied_games = @game_collection.games.find_all {|game| game.home_goals == game.away_goals}
-    (tied_games.length.to_f / @game_collection.games.length.to_f).round(2)
+    @game_collection.percentage_ties
   end
-
 
   def lowest_scoring_home_team
-    home_team_goals = @game_collection.all.reduce({}) do |goals_by_team, game|
-      if goals_by_team.has_key?(game.home_team_id)
-        goals_by_team[game.home_team_id] << game.home_goals
-      else
-        goals_by_team[game.home_team_id] = [game.home_goals]
-      end
-      goals_by_team
-    end
-
-    average_home_goals = home_team_goals.transform_values do |goals|
-      goals.sum/goals.length.to_f
-    end
-
-    worst_team = average_home_goals.key(average_home_goals.values.min)
-
-    @team_collection.where_id(worst_team)
+    @team_collection.where_id(@game_collection.lowest_scoring_home_team_id)
   end
 
   #uses game and game_team collections.
@@ -294,114 +248,13 @@ class StatTracker
     end
     team_id.map{|id| @team_collection.where_id(id)}
   end
-    # home_hash = @game_team_collection.all.reduce({}) do |accum, game|
-    #   if accum.has_key?(game.team_id) && game.home_or_away == 'home'
-    #     accum[game.team_id] << game.result
-    #   else
-    #     accum[game.team_id] = [game.result] if game.home_or_away == 'home'
-    #   end
-    #   accum
-    # end
-    # away_hash = @game_team_collection.all.reduce({}) do |accum, game|
-    #   if accum.has_key?(game.team_id)
-    #     accum[game.team_id] << game.result && game.home_or_away == "away"
-    #   else
-    #     accum[game.team_id] = [game.result] if game.home_or_away == "away"
-    #   end
-    #   accum
-    # end
-    # home_hash.transform_values! { |stats| stats.count("WIN")} #/stats.length.to_f }
-    # away_hash.transform_values! { |stats| stats.count("WIN")} #/stats.length.to_f }
-    # home_minus_away = away_hash.merge(home_hash){|key, oldval, newval| (newval - oldval).round(2)}
-    # worst_team = home_minus_away.keep_if {|team, score| score < 0}
-    # require "pry"; binding.pry
-    # worst_team = home_minus_away.key(home_minus_away.values.min)
-    # @team_collection.where_id(worst_team)
 
   def biggest_bust(season)
-    regular = []
-    post = []
-    @game_collection.all.each do |game|
-      if game.season == season && game.type == "Postseason"
-        post << game.game_id
-      elsif game.season == season && game.type == "Regular Season"
-        regular << game.game_id
-      end
-    end
-##
-    game_teams_regular = @game_team_collection.all.find_all do |game_team|
-      regular.include?(game_team.game_id)
-    end
-    game_teams_post = @game_team_collection.all.find_all do |game_team|
-      post.include?(game_team.game_id)
-    end
-
-    game_teams_regular = @game_team_collection.all.reduce({}) do |accum, game_team|
-      if regular.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
-        accum[game_team.team_id] << game_team.result
-      elsif regular.include?(game_team.game_id)
-        accum[game_team.team_id] = [game_team.result]
-      end
-      accum
-    end
-
-    game_teams_post = @game_team_collection.all.reduce({}) do |accum,game_team|
-      if post.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
-        accum[game_team.team_id] << game_team.result
-      elsif post.include?(game_team.game_id)
-        accum[game_team.team_id] = [game_team.result]
-      end
-      accum
-    end
-
-    game_teams_regular.transform_values! { |result| result.count("WIN")/result.length.to_f }
-    game_teams_post.transform_values! { |result| result.count("WIN")/result.length.to_f }
-    post_minus_regular = game_teams_regular.merge(game_teams_post){|key, oldval, newval| newval - oldval}
-    worst_team = post_minus_regular.key(post_minus_regular.values.min)
-    @team_collection.where_id(worst_team)
+    ##come back to this later
   end
 
   def biggest_surprise(season)
-    regular = []
-    post = []
-    @game_collection.all.each do |game|
-      if game.season == season && game.type == "Postseason"
-        post << game.game_id
-      elsif game.season == season && game.type == "Regular Season"
-        regular << game.game_id
-      end
-    end
-
-    game_teams_regular = @game_team_collection.all.find_all do |game_team|
-      regular.include?(game_team.game_id)
-    end
-    game_teams_post = @game_team_collection.all.find_all do |game_team|
-      post.include?(game_team.game_id)
-    end
-
-    game_teams_regular = @game_team_collection.all.reduce({}) do |accum, game_team|
-      if regular.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
-        accum[game_team.team_id] << game_team.result
-      elsif regular.include?(game_team.game_id)
-        accum[game_team.team_id] = [game_team.result]
-      end
-      accum
-    end
-
-    game_teams_post = @game_team_collection.all.reduce({}) do |accum,game_team|
-      if post.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
-        accum[game_team.team_id] << game_team.result
-      elsif post.include?(game_team.game_id)
-        accum[game_team.team_id] = [game_team.result]
-      end
-      accum
-    end
-
-    game_teams_regular.transform_values! { |result| result.count("WIN")/result.length.to_f }
-    game_teams_post.transform_values! { |result| result.count("WIN")/result.length.to_f }
-    post_minus_regular = game_teams_regular.merge(game_teams_post){|key, oldval, newval| newval - oldval}
-    best_team = post_minus_regular.key(post_minus_regular.values.max)
-    @team_collection.where_id(best_team)
+    ##come back to this later
   end
 
   def highest_scoring_visitor

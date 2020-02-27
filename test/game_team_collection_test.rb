@@ -33,17 +33,10 @@ class GameTeamCollectionTest < Minitest::Test
     assert_equal 3, game_team.team_id
     assert_equal "away", game_team.home_or_away
     assert_equal "LOSS", game_team.result
-    assert_equal "OT", game_team.settled_in
     assert_equal "John Tortorella", game_team.head_coach
     assert_equal 2, game_team.goals
     assert_equal 8, game_team.shots
     assert_equal 44, game_team.tackles
-    assert_equal 8, game_team.pim
-    assert_equal 3, game_team.power_play_opportunities
-    assert_equal 0, game_team.power_play_goals
-    assert_equal 44.8, game_team.face_of_win_percentage
-    assert_equal 17, game_team.giveaways
-    assert_equal 7, game_team.takeaways
   end
 
   def test_it_can_collect_a_game_team_object
@@ -90,5 +83,12 @@ class GameTeamCollectionTest < Minitest::Test
 
     assert_equal expected_first, @game_team_collection.where(:game_id, 2012030221)
     assert_equal expected_second, @game_team_collection.where(:game_id, 2013021085)
+  end
+
+  def test_it_can_return_best_or_worst_offense
+    @game_team_collection.create_game_team_collection
+
+    assert_equal 6, @game_team_collection.is_best_offense(true)
+    assert_equal 19, @game_team_collection.is_best_offense(false)
   end
 end

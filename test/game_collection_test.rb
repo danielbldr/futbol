@@ -30,7 +30,6 @@ class GameCollectionTest < Minitest::Test
     assert_instance_of Game, game
     assert_equal 2012030221, game.game_id
     assert_equal "Postseason", game.type
-    assert_equal "5/16/13", game.date_time
     assert_equal 3, game.away_team_id
   end
 
@@ -102,5 +101,23 @@ class GameCollectionTest < Minitest::Test
     expected = {"20122013"=>4.71, "20132014"=>4.00}
 
     assert_equal expected, @game_collection.average_goals_by_season
+  end
+
+  def test_it_can_get_home_wins_percentage
+    @game_collection.create_game_collection
+
+    assert_equal 0.6, @game_collection.percentage_home_wins
+  end
+
+  def test_it_can_get_away_win_percentages
+    @game_collection.create_game_collection
+
+    assert_equal 0.3, @game_collection.percentage_visitor_wins
+  end
+
+  def test_it_can_lowest_scoring_home_team
+    @game_collection.create_game_collection
+
+    assert_equal 3, @game_collection.lowest_scoring_home_team_id
   end
 end
