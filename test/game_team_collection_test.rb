@@ -91,4 +91,11 @@ class GameTeamCollectionTest < Minitest::Test
     assert_equal expected_first, @game_team_collection.where(:game_id, 2012030221)
     assert_equal expected_second, @game_team_collection.where(:game_id, 2013021085)
   end
+
+  def test_it_can_return_best_or_worst_offense
+    @game_team_collection.create_game_team_collection
+
+    assert_equal 6, @game_team_collection.is_best_offense(true)
+    assert_equal 19, @game_team_collection.is_best_offense(false)
+  end
 end

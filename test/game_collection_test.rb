@@ -30,7 +30,6 @@ class GameCollectionTest < Minitest::Test
     assert_instance_of Game, game
     assert_equal 2012030221, game.game_id
     assert_equal "Postseason", game.type
-    assert_equal "5/16/13", game.date_time
     assert_equal 3, game.away_team_id
   end
 

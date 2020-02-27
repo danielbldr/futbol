@@ -185,6 +185,7 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_find_the_biggest_bust
+    skip
     game_1_info = {game_id: "2012030221", season: "20122013", type: "Regular Season"}
     game_2_info = {game_id: "2012030222", season: "20122013", type: "Regular Season"}
     game_3_info = {game_id: "2012030223", season: "20122013", type: "Regular Season"}
@@ -244,6 +245,7 @@ class StatTrackerTest < Minitest::Test
   end
 
   def test_it_can_find_the_biggest_suprise
+    skip
     game_1_info = {game_id: "2012030221", season: "20122013", type: "Regular Season"}
     game_2_info = {game_id: "2012030222", season: "20122013", type: "Regular Season"}
     game_3_info = {game_id: "2012030223", season: "20122013", type: "Regular Season"}

@@ -1,7 +1,9 @@
 require_relative "game_team"
+require_relative "calculable"
 require "csv"
-class GameTeamCollection
 
+class GameTeamCollection
+  include Calculable
   attr_reader :games_by_teams, :csv_file_path
   def initialize(csv_file_path)
     @games_by_teams = []
@@ -32,5 +34,14 @@ class GameTeamCollection
 
   def where(key, value)
     @games_by_teams.find_all{|game| game.send("#{key}") == value}
+  end
+
+  def is_best_offense(status)
+    games_by_team = all.group_by{|game| game.team_id}
+    average_goals_by_team = games_by_team.transform_values do |games|
+      average(games.map {|game| game.goals})
+    end
+    return average_goals_by_team.key(average_goals_by_team.values.max) if status
+    average_goals_by_team.key(average_goals_by_team.values.min)
   end
 end
