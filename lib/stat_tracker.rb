@@ -97,40 +97,20 @@ class StatTracker
     @team_collection.where_id(worst_team)
   end
 
-  #uses only game_collection
   def percentage_home_wins
     @game_collection.percentage_home_wins
   end
 
-  #uses only game_collection
   def percentage_visitor_wins
     @game_collection.percentage_visitor_wins
   end
 
-  #uses only game_collection
   def percentage_ties
-    tied_games = @game_collection.games.find_all {|game| game.home_goals == game.away_goals}
-    (tied_games.length.to_f / @game_collection.games.length.to_f).round(2)
+    @game_collection.percentage_ties
   end
 
-
   def lowest_scoring_home_team
-    home_team_goals = @game_collection.all.reduce({}) do |goals_by_team, game|
-      if goals_by_team.has_key?(game.home_team_id)
-        goals_by_team[game.home_team_id] << game.home_goals
-      else
-        goals_by_team[game.home_team_id] = [game.home_goals]
-      end
-      goals_by_team
-    end
-
-    average_home_goals = home_team_goals.transform_values do |goals|
-      goals.sum/goals.length.to_f
-    end
-
-    worst_team = average_home_goals.key(average_home_goals.values.min)
-
-    @team_collection.where_id(worst_team)
+    @team_collection.where_id(@game_collection.lowest_scoring_home_team_id)
   end
 
   #uses game and game_team collections.

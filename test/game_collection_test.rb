@@ -114,4 +114,10 @@ class GameCollectionTest < Minitest::Test
 
     assert_equal 0.3, @game_collection.percentage_visitor_wins
   end
+
+  def test_it_can_lowest_scoring_home_team
+    @game_collection.create_game_collection
+
+    assert_equal 3, @game_collection.lowest_scoring_home_team_id
+  end
 end
