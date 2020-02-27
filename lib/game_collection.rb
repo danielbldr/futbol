@@ -50,4 +50,14 @@ class GameCollection
       average(total_goals_per_game(games))
     end
   end
+
+  def percentage_home_wins
+    home_wins = all.find_all {|game| game.home_goals > game.away_goals}
+    percentage(home_wins, all)
+  end
+
+  def percentage_visitor_wins
+    visitor_wins = all.find_all {|game| game.home_goals < game.away_goals}
+    percentage(visitor_wins, all)
+  end
 end

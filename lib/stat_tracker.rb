@@ -67,7 +67,7 @@ class StatTracker
       goals_against_by_team[game.away_team_id] << game.home_goals
     end
     goals_against_by_team.transform_values! do |goals|
-      goals.sum/goals.length.to_f                                                 # average calcultion
+      average(goals)
     end
     best_defense = goals_against_by_team.key(goals_against_by_team.values.min)
     @team_collection.where_id(best_defense)
@@ -99,14 +99,12 @@ class StatTracker
 
   #uses only game_collection
   def percentage_home_wins
-    home_wins = @game_collection.games.find_all {|game| game.home_goals > game.away_goals}
-    (home_wins.length.to_f / @game_collection.games.length.to_f).round(2)
+    @game_collection.percentage_home_wins
   end
 
   #uses only game_collection
   def percentage_visitor_wins
-    away_wins = @game_collection.games.find_all {|game| game.home_goals < game.away_goals}
-    (away_wins.length.to_f / @game_collection.games.length.to_f).round(2)
+    @game_collection.percentage_visitor_wins
   end
 
   #uses only game_collection
