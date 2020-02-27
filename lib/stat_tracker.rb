@@ -276,46 +276,7 @@ class StatTracker
   end
 
   def biggest_surprise(season)
-    regular = []
-    post = []
-    @game_collection.all.each do |game|
-      if game.season == season && game.type == "Postseason"
-        post << game.game_id
-      elsif game.season == season && game.type == "Regular Season"
-        regular << game.game_id
-      end
-    end
-
-    game_teams_regular = @game_team_collection.all.find_all do |game_team|
-      regular.include?(game_team.game_id)
-    end
-    game_teams_post = @game_team_collection.all.find_all do |game_team|
-      post.include?(game_team.game_id)
-    end
-
-    game_teams_regular = @game_team_collection.all.reduce({}) do |accum, game_team|
-      if regular.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
-        accum[game_team.team_id] << game_team.result
-      elsif regular.include?(game_team.game_id)
-        accum[game_team.team_id] = [game_team.result]
-      end
-      accum
-    end
-
-    game_teams_post = @game_team_collection.all.reduce({}) do |accum,game_team|
-      if post.include?(game_team.game_id) && accum.has_key?(game_team.team_id)
-        accum[game_team.team_id] << game_team.result
-      elsif post.include?(game_team.game_id)
-        accum[game_team.team_id] = [game_team.result]
-      end
-      accum
-    end
-
-    game_teams_regular.transform_values! { |result| result.count("WIN")/result.length.to_f }
-    game_teams_post.transform_values! { |result| result.count("WIN")/result.length.to_f }
-    post_minus_regular = game_teams_regular.merge(game_teams_post){|key, oldval, newval| newval - oldval}
-    best_team = post_minus_regular.key(post_minus_regular.values.max)
-    @team_collection.where_id(best_team)
+    ##come back to this later
   end
 
   def highest_scoring_visitor

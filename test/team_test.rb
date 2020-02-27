@@ -19,10 +19,6 @@ class TeamTest < Minitest::Test
     team = Team.new(info)
 
     assert_equal 6, team.team_id
-    assert_equal 6, team.franchise_id
     assert_equal "FC Dallas", team.team_name
-    assert_equal "DAL", team.abbreviation
-    assert_equal "Toyota Stadium", team.stadium
-    assert_equal "/api/v1/teams/6", team.team_link
   end
 end
